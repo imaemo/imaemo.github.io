@@ -12,8 +12,8 @@
 
 
 
-    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.jpg" type="image/x-icon">
-    <link rel="icon" href="https://imaemo.github.io/images/profile.jpg" type="image/x-icon">
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -37,7 +37,7 @@
 <meta property="article:section" content="Python"/>
 <meta property="article:tag" content="pelican"/>
 <meta property="article:tag" content="python"/>
-<meta property="og:image" content="https://imaemo.github.io/images/profile.jpg">
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
 
   <title>meego &ndash; Hello pelicon</title>
 
@@ -46,7 +46,7 @@
   <aside>
     <div>
       <a href="https://imaemo.github.io">
-        <img src="https://imaemo.github.io/images/profile.jpg" alt="" title="">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
       </a>
       <h1><a href="https://imaemo.github.io"></a></h1>
 
@@ -55,15 +55,12 @@
         <ul class="list">
           <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
 
-          <li><a href="http://getpelican.com/" target="_blank">Pelican</a></li>
-          <li><a href="http://python.org/" target="_blank">Python.org</a></li>
-          <li><a href="http://jinja.pocoo.org/" target="_blank">Jinja2</a></li>
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
         </ul>
       </nav>
 
       <ul class="social">
         <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
-        <li><a class="sc-Another social link" href="#" target="_blank"><i class="fa fa-Another social link"></i></a></li>
       </ul>
     </div>
 
@@ -96,9 +93,53 @@
   <div>
     <p>之前搭建立过几次博客,用过wordpress, 也在家里的路由器上面搭建过emlog。现在一直在用python，所以想定下来，用pelicon搭建，托管在github上面。  </p>
 <p>主要步骤：</p>
-<div class="highlight"><pre><span></span>建立一个python环境  
-`virtualenv pelicon_env`
+<p>建立一个python环境   </p>
+<div class="highlight"><pre><span></span>virtualenv pelicon_env
+source pelicon_env/bin/active
 </pre></div>
+
+
+<p>安装pelican  </p>
+<div class="highlight"><pre><span></span>pip install pelican markdown
+</pre></div>
+
+
+<p>新建一个目录  </p>
+<div class="highlight"><pre><span></span>mkdir blog 
+cd blog
+</pre></div>
+
+
+<p>快速建立project文件 </p>
+<div class="highlight"><pre><span></span>pelican-quickstart
+</pre></div>
+
+
+<p>回答一些选项之后，就可以开始写文章了。<br />
+进入content文件夹下。内容开始开头部分都是一样的。  </p>
+<div class="highlight"><pre><span></span><span class="n">Title</span><span class="o">:</span> <span class="n">Hello</span> <span class="n">pelican</span>
+<span class="n">Date</span><span class="o">:</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">11</span> <span class="mi">10</span><span class="o">:</span><span class="mi">10</span>
+<span class="n">Category</span><span class="o">:</span> <span class="n">python</span>
+<span class="n">Tages</span><span class="o">:</span><span class="n">python</span><span class="o">,</span> <span class="n">pelican</span>
+</pre></div>
+
+
+<p>生成内容  </p>
+<div class="highlight"><pre><span></span>pelican content
+</pre></div>
+
+
+<p>生成的内容在<code>output</code>文件夹中  </p>
+<p>本地预览  </p>
+<div class="highlight"><pre><span></span>make devserver
+# 或者  
+python -m pelicon.server # python 2.7
+# 或者 
+fabi serve
+</pre></div>
+
+
+<p>未完待续。。。</p>
   </div>
   <div class="tag-cloud">
     <p>
@@ -110,6 +151,19 @@
 
 
 
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
 </article>
 
     <footer>
@@ -128,7 +182,7 @@
   "@type" : "Blog",
   "name": " meego ",
   "url" : "https://imaemo.github.io",
-  "image": "https://imaemo.github.io/images/profile.jpg",
+  "image": "https://imaemo.github.io/images/profile.png",
   "description": ""
 }
 </script>
