@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="http://localhost:8000/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="http://localhost:8000/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="搭建pelicon过程" />
+<meta name="keywords" content="pelican, python">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="Hello pelicon"/>
+<meta property="og:description" content="搭建pelicon过程"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="http://localhost:8000/hello-pelicon.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-10 15:29:00+08:00"/>
+<meta property="article:modified_time" content="2016-12-11 17:22:00+08:00"/>
+<meta property="article:author" content="http://localhost:8000/author/meego.html">
+<meta property="article:section" content="Python"/>
+<meta property="article:tag" content="pelican"/>
+<meta property="article:tag" content="python"/>
+<meta property="og:image" content="http://localhost:8000/images/profile.png">
+
+  <title>meego &ndash; Hello pelicon</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="http://localhost:8000">
+        <img src="http://localhost:8000/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="http://localhost:8000"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="http://localhost:8000/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="http://localhost:8000">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="hello-pelicon">Hello pelicon</h1>
+    <p>
+          Posted on 六 10 十二月 2016 in <a href="http://localhost:8000/category/python.html">Python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>之前搭建立过几次博客,用过wordpress, 也在家里的路由器上面搭建过emlog。现在一直在用python，所以想定下来，用pelicon搭建，托管在github上面。  </p>
+<p>主要步骤：</p>
+<p>建立一个python环境   </p>
+<div class="highlight"><pre><span></span>virtualenv pelicon_env
+source pelicon_env/bin/active
+</pre></div>
+
+
+<p>安装pelican  </p>
+<div class="highlight"><pre><span></span>pip install pelican markdown
+</pre></div>
+
+
+<p>新建一个目录  </p>
+<div class="highlight"><pre><span></span>mkdir blog 
+cd blog
+</pre></div>
+
+
+<p>快速建立project文件 </p>
+<div class="highlight"><pre><span></span>pelican-quickstart
+</pre></div>
+
+
+<p>回答一些选项之后，就可以开始写文章了。<br />
+进入content文件夹下。内容开始开头部分都是一样的。  </p>
+<div class="highlight"><pre><span></span><span class="n">Title</span><span class="o">:</span> <span class="n">Hello</span> <span class="n">pelican</span>
+<span class="n">Date</span><span class="o">:</span> <span class="mi">2016</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">11</span> <span class="mi">10</span><span class="o">:</span><span class="mi">10</span>
+<span class="n">Category</span><span class="o">:</span> <span class="n">python</span>
+<span class="n">Tages</span><span class="o">:</span><span class="n">python</span><span class="o">,</span> <span class="n">pelican</span>
+</pre></div>
+
+
+<p>生成内容  </p>
+<div class="highlight"><pre><span></span>pelican content
+</pre></div>
+
+
+<p>生成的内容在<code>output</code>文件夹中  </p>
+<p>本地预览  </p>
+<div class="highlight"><pre><span></span>make devserver
+# 或者  
+python -m pelicon.server # python 2.7
+# 或者 
+fabi serve
+</pre></div>
+
+
+<p>未完待续。。。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="http://localhost:8000/tag/pelican.html">pelican</a>
+      <a href="http://localhost:8000/tag/python.html">python</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "http://localhost:8000",
+  "image": "http://localhost:8000/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
