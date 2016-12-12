@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="nginx uwsgi django 部署流程" />
+<meta name="keywords" content="uwsgi, nginx, django">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="Centos7 下部署django"/>
+<meta property="og:description" content="nginx uwsgi django 部署流程"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/centos7-xia-bu-shu-django.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-12 15:20:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="python"/>
+<meta property="article:tag" content="uwsgi"/>
+<meta property="article:tag" content="nginx"/>
+<meta property="article:tag" content="django"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; Centos7 下部署django</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="centos7-xia-bu-shu-django">Centos7 下部署django</h1>
+    <p>
+          Posted on 一 12 十二月 2016 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>前几天在阿里云上部署了一个系统。顺便了解了一下nginx, uwsgi, django部署的流程 </p>
+<p>首先安装nginx,这个比较简单 </p>
+<div class="highlight"><pre><span></span>sudo yum install nginx
+</pre></div>
+
+
+<p>安装uwsgi, 这里要注意，最好用pip安装，而不用yum安装。通常用yum或者apt-get安装的,需要在命令后面加上 <code>--plugin python</code></p>
+<div class="highlight"><pre><span></span>pip install --user uwsgi
+</pre></div>
+
+
+<p>一步一步使用uwsgi, 第一个WSGI project, 保存为foobar.py </p>
+<div class="highlight"><pre><span></span>def application(env, start_response):
+    start_response(&#39;200 OK&#39;, [(&#39;Content-Type&#39;,&#39;text/html&#39;)])
+    return [b&quot;Hello World&quot;]
+</pre></div>
+
+
+<p>部署到9090端口  </p>
+<h6>启动uWSGI作为http服务器转发请求到WSGI application</h6>
+<div class="highlight"><pre><span></span>uwsgi --http :9090 --wsgi-file foobar.py
+</pre></div>
+
+
+<p>浏览器访问 <code>http://localhost:9090</code>就可以看到效果。<br />
+如果是在服务器，可以用 <code>curl -i "http://localhost:9090"</code></p>
+<p>开启并发处理，监控  </p>
+<div class="highlight"><pre><span></span>uwsgi --http :9090 --wsgi-file foobar.py --master --processes 4 --threads 2 --stats 127.0.0.1:9191
+</pre></div>
+
+
+<p>开启了4个进程，2个线程(这里我其实不是太清楚), <code>127.0.0.1:9191</code>会输出各个进程和线程的状态 这里推荐一个项目 <a href="https://github.com/unbit/django-uwsgi">djano-uwsgi</a>  </p>
+<p>uWSGI 支持HTTP, FastCGI, SCGI,和 uwsgi。但是对uwsgi协议支持是性能最好的。nginx也支持uwsgi协议。所以可以配合来使用<br />
+nginx配置</p>
+<div class="highlight"><pre><span></span><span class="nt">location</span> <span class="o">/</span> <span class="p">{</span>
+    <span class="n">include</span> <span class="n">uwsgi_params</span><span class="p">;</span>
+    <span class="n">uwsgi_pass</span> <span class="m">127</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">1</span><span class="o">:</span><span class="m">3031</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>上面的配置意思是把服务器3031端口的的请求转成uwsgi协议<br />
+然后uWSGI使用uwsgi协议  </p>
+<div class="highlight"><pre><span></span>uwsgi --socket 127.0.0.1:3031 --wsgi-file foobar.py --master --processes 4 --threads 2 --stats 127.0.0.1:9191
+</pre></div>
+
+
+<p>部署Django应用<br />
+Django应用目录在<code>/home/foobar/myproject</code> </p>
+<div class="highlight"><pre><span></span>uwsgi --socket 127.0.0.1:3031 --chdir /home/foobar/myproject/ --wsgi-file myproject/wsgi.py --master --processes 4 --threads 2 --stats 127.0.0.1:9191
+</pre></div>
+
+
+<p>上面命令的参数太多了，uWSGI支持配置文件，新建uwsgi.ini文件  </p>
+<div class="highlight"><pre><span></span><span class="k">[uwsgi]</span>
+<span class="na">socket</span> <span class="o">=</span> <span class="s">127.0.0.1:3031</span>
+<span class="na">chdir</span> <span class="o">=</span> <span class="s">/home/foobar/myproject/</span>
+<span class="na">wsgi-file</span> <span class="o">=</span> <span class="s">myproject/wsgi.py</span>
+<span class="na">processes</span> <span class="o">=</span> <span class="s">4</span>
+<span class="na">threads</span> <span class="o">=</span> <span class="s">2</span>
+<span class="na">stats</span> <span class="o">=</span> <span class="s">127.0.0.1:9191</span>
+</pre></div>
+
+
+<p>然后运行  </p>
+<div class="highlight"><pre><span></span>uwsgi uwsgi.ini
+</pre></div>
+
+
+<hr />
+<p><em>以上内容是从官方的教程提取出来的。下面是我实际中结合文档的操作</em>    </p>
+<p>django <a href="https://docs.djangoproject.com/en/1.10/howto/static-files/deployment/">deployment checklist</a> </p>
+<p>运行 <code>python mannage.py check --deploy</code><br />
+会检查settings.py里面的设置是否合适，比如关闭debug等等 </p>
+<p>django <a href="https://docs.djangoproject.com/en/1.10/howto/static-files/deployment/">Deploying static files</a></p>
+<p>在settings.py里面要设置一个<code>STATIC_ROOT</code>,</p>
+<div class="highlight"><pre><span></span>STATIC_ROOT = os.path.join(BASE_DIR, &quot;collected_static/&quot;)
+</pre></div>
+
+
+<p>在<code>部署服务器</code>上运行 <code>python manage.py collectstatic</code>, 把静态文件拷贝到<code>collected_static</code>目录上，否则运行之后报404错误</p>
+<p>新建nginx的配置文件，eng_nginx.conf  </p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nt">the</span> <span class="nt">upstream</span> <span class="nt">component</span> <span class="nt">nginx</span> <span class="nt">needs</span> <span class="nt">to</span> <span class="nt">connect</span> <span class="nt">to</span>
+<span class="nt">upstream</span> <span class="nt">ent</span> <span class="p">{</span>
+    <span class="n">server</span> <span class="n">unix</span><span class="o">:///</span><span class="n">run</span><span class="o">/</span><span class="n">uwsgi</span><span class="o">/</span><span class="n">ent</span><span class="o">.</span><span class="n">sock</span><span class="p">;</span> <span class="err">#</span> <span class="n">for</span> <span class="n">a</span> <span class="n">file</span> <span class="n">socket</span>
+    <span class="m">#server</span> <span class="m">127</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">0</span><span class="o">.</span><span class="m">1</span><span class="o">:</span><span class="m">8001</span><span class="p">;</span> <span class="err">#</span> <span class="n">for</span> <span class="n">a</span> <span class="n">web</span> <span class="n">port</span> <span class="n">socket</span> <span class="p">(</span><span class="n">we</span><span class="s1">&#39;ll use this first)</span>
+<span class="s1">}</span>
+
+<span class="s1"># configuration of the server</span>
+<span class="s1">server {</span>
+<span class="s1">    # the port your site will be served on</span>
+<span class="s1">    listen      80;</span>
+<span class="s1">    # the domain name it will serve for</span>
+<span class="s1">    server_name xxx.com; # substitute your machine&#39;</span><span class="n">s</span> <span class="n">IP</span> <span class="n">address</span> <span class="n">or</span> <span class="n">FQDN</span>
+    <span class="n">charset</span>     <span class="n">utf</span><span class="m">-8</span><span class="p">;</span>
+
+    <span class="err">#</span> <span class="n">max</span> <span class="n">upload</span> <span class="nb">size</span>
+    <span class="n">client_max_body_size</span> <span class="m">75</span><span class="n">M</span><span class="p">;</span>   <span class="err">#</span> <span class="n">adjust</span> <span class="n">to</span> <span class="n">taste</span>
+
+    <span class="err">#</span> <span class="n">Django</span> <span class="n">media</span>
+    <span class="n">location</span> <span class="o">/</span><span class="n">favicon</span><span class="o">.</span><span class="n">ico</span><span class="err">{</span>
+        <span class="n">alias</span>  <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">media</span><span class="o">/</span><span class="n">favicon</span><span class="o">.</span><span class="n">ico</span><span class="p">;</span> <span class="err">#</span> <span class="n">your</span> <span class="n">Django</span> <span class="n">project</span><span class="s1">&#39;s media files - amend as required</span>
+<span class="s1">    }</span>
+
+<span class="s1">    # Django media</span>
+<span class="s1">    location /media  {</span>
+<span class="s1">        alias  /var/www/ent/ent/media; # your Django project&#39;</span><span class="n">s</span> <span class="n">media</span> <span class="n">files</span> <span class="o">-</span> <span class="n">amend</span> <span class="n">as</span> <span class="n">required</span>
+    <span class="p">}</span>
+
+    <span class="nt">location</span> <span class="o">/</span><span class="nt">static</span> <span class="p">{</span>
+        <span class="n">alias</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">collected_static</span><span class="p">;</span> <span class="err">#</span> <span class="n">your</span> <span class="n">Django</span> <span class="n">project</span><span class="err">&#39;</span><span class="n">s</span> <span class="nb">static</span> <span class="n">files</span> <span class="o">-</span> <span class="n">amend</span> <span class="n">as</span> <span class="n">required</span>
+    <span class="p">}</span>
+
+    <span class="err">#</span> <span class="nt">Finally</span><span class="o">,</span> <span class="nt">send</span> <span class="nt">all</span> <span class="nt">non-media</span> <span class="nt">requests</span> <span class="nt">to</span> <span class="nt">the</span> <span class="nt">Django</span> <span class="nt">server</span><span class="o">.</span>
+    <span class="nt">location</span> <span class="o">/</span> <span class="p">{</span>
+        <span class="n">uwsgi_pass</span>  <span class="n">ent</span><span class="p">;</span>
+        <span class="n">include</span>     <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">www</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">ent</span><span class="o">/</span><span class="n">uwsgi_params</span><span class="p">;</span> <span class="err">#</span> <span class="n">the</span> <span class="n">uwsgi_params</span> <span class="n">file</span> <span class="n">you</span> <span class="n">installed</span>
+    <span class="p">}</span>
+<span class="err">}</span>
+</pre></div>
+
+
+<p>这里使用了unix sock方式，而没有使用端口方式, sock文件路径是 <code>/run/uwsgi/ent.sock</code>,这个路径是systemd动态创建的，不需要手动创建。
+<code>uwsgi_params</code>可以使用project中的，也可以使用nginx安装路径的。<br />
+<code>static</code>请求要指定到上一步对应的目录中。 
+<code>media</code>也是要指定到对应目录。<br />
+注意上面两个目录必须包含nginx运行的用户组,有可能是<code>www-data</code>，也有可能是<code>nginx</code>，并且当前用户要加入到nginx的用户组。</p>
+<div class="highlight"><pre><span></span>sudo chown -R user:nginx collected_static
+sudo chown -R user:nginx media
+</pre></div>
+
+
+<p>uwsgi配置  </p>
+<p>这里直接使用 uWSGI的emperor 模式</p>
+<div class="highlight"><pre><span></span># create a directory for the vassals
+sudo mkdir /etc/uwsgi
+sudo mkdir /etc/uwsgi/vassals
+# symlink from the default config directory to your config file
+sudo ln -s /path/to/your/mysite/mysite_uwsgi.ini /etc/uwsgi/vassals/
+# run the emperor
+uwsgi --emperor /etc/uwsgi/vassals --uid www-data --gid www-data
+# touch emperor.ini
+cd ..
+touch emperor.ini
+[uwsgi]
+
+# the base directory (full path)
+chdir = /home/maemo/workspace/python/ent
+
+# Django s wsgi file
+module = ent.wsgi:application
+
+;home = /var/www/ent/uwsgi
+
+# process-related settings
+# master
+master = true
+
+# maximum number of worker processes
+processes = 1
+
+socket = /run/uwsgi/ent.sock
+
+# ... with appropriate permissions - may be needed
+chmod-socket = 664
+# clear environment on exit
+vacuum = true
+
+die-on-term = true
+
+;logto = /tmp/ent.log
+;logfile-chmod = 666
+daemonize = /var/log/uwsgi/ent.log
+</pre></div>
+
+
+<p>mysite_uwsgi.ini的内容： </p>
+<div class="highlight"><pre><span></span><span class="k">[uwsgi]</span>
+
+    <span class="na">uid</span> <span class="o">=</span> <span class="s">maemo</span>
+<span class="s">    gid = nginx</span>
+<span class="s">    # the base directory (full path)</span>
+<span class="s">    chdir = /var/www/ent/ent</span>
+
+    <span class="c1"># Django s wsgi file</span>
+    <span class="na">module</span> <span class="o">=</span> <span class="s">ent.wsgi:application</span>
+
+    <span class="c1">;home = /var/www/ent/uwsgi</span>
+
+    <span class="c1"># process-related settings</span>
+    <span class="c1"># master</span>
+    <span class="na">master</span> <span class="o">=</span> <span class="s">true</span>
+
+    <span class="c1"># maximum number of worker processes</span>
+    <span class="na">processes</span> <span class="o">=</span> <span class="s">1</span>
+
+    <span class="c1">#socket = /var/www/ent/ent.sock</span>
+    <span class="na">socket</span> <span class="o">=</span> <span class="s">/run/uwsgi/ent.sock</span>
+
+    <span class="c1"># ... with appropriate permissions - may be needed</span>
+    <span class="na">chmod-socket</span> <span class="o">=</span> <span class="s">664</span>
+<span class="s">    # clear environment on exit</span>
+<span class="s">    vacuum = true</span>
+
+    <span class="na">die-on-term</span> <span class="o">=</span> <span class="s">true</span>
+
+    <span class="c1">;logto = /tmp/ent.log</span>
+    <span class="c1">;logfile-chmod = 666</span>
+    <span class="na">daemonize</span> <span class="o">=</span> <span class="s">/var/log/uwsgi/ent.log</span>
+</pre></div>
+
+
+<p>emperor.ini 内容如下：</p>
+<div class="highlight"><pre><span></span><span class="k">[uwsgi]</span>
+<span class="na">emperor</span> <span class="o">=</span> <span class="s">/etc/uwsgi/vassals</span>
+<span class="c1">#uid = user</span>
+<span class="c1">#gid = nginx</span>
+</pre></div>
+
+
+<p>上面指定了uWSGI的用户是user，用户组是nginx，当然，这个在上面的mysite_uwsgi.ini也可以单独配置,这个很重要<br />
+另外，mysite_uwsgi.ini中的<code>sock</code>文件与ent_ngixn.conf中的<code>sock</code>一定要是相同的  </p>
+<p>使用systemd启动和停止uWSGI  </p>
+<div class="highlight"><pre><span></span>cd /etc/systemd/system
+sudo touch emperor.uwsgi.service
+</pre></div>
+
+
+<p>emperor.uwsgi.service的内容如下： </p>
+<div class="highlight"><pre><span></span><span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">uWSGI Emperor</span>
+<span class="na">After</span><span class="o">=</span><span class="s">syslog.target</span>
+
+<span class="k">[Service]</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">/home/user/.local/bin/uwsgi --ini /etc/uwsgi/emperor.ini</span>
+<span class="na">RuntimeDirectory</span><span class="o">=</span><span class="s">uwsgi</span>
+<span class="na">Restart</span><span class="o">=</span><span class="s">always</span>
+<span class="na">KillSignal</span><span class="o">=</span><span class="s">SIGQUIT</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">notify</span>
+<span class="na">StandardError</span><span class="o">=</span><span class="s">syslog</span>
+<span class="na">NotifyAccess</span><span class="o">=</span><span class="s">all</span>
+<span class="na">User</span><span class="o">=</span><span class="s">maemo</span>
+<span class="na">Group</span><span class="o">=</span><span class="s">nginx</span>
+
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">multi-user.target</span>
+</pre></div>
+
+
+<p>注意到上面<code>uwsgi</code>是绝对路径，因为我是用pip安装到当前用户的
+<code>RuntimeDirectory=uwsgi</code>这一句就会自动在<code>/run/</code>下面创建<code>uwsgi/ent.sock</code>文件，在旧版本的<code>systemd</code>中可能要参考其它方法  </p>
+<p>启动nginx和uWSGI  </p>
+<div class="highlight"><pre><span></span>sudo systemctl restart nginx.service
+sudo systemctl restart emperor.uwsgi.service
+</pre></div>
+
+
+<p>在这个过程中，我遇到很多错误，最有用的是看nginx和uWSGI的log，通过log再到网上去查能很快解决问题 </p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/uwsgi.html">uwsgi</a>
+      <a href="https://imaemo.github.io/tag/nginx.html">nginx</a>
+      <a href="https://imaemo.github.io/tag/django.html">django</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
