@@ -4,16 +4,16 @@
 <head>
   <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
 
-    <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/stylesheet/style.min.css">
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
 
-  <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/pygments/github.min.css">
-  <link rel="stylesheet" type="text/css" href="http://localhost:8000/theme/font-awesome/css/font-awesome.min.css">
-
-
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
 
 
-    <link rel="shortcut icon" href="http://localhost:8000/images/profile.png" type="image/x-icon">
-    <link rel="icon" href="http://localhost:8000/images/profile.png" type="image/x-icon">
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -29,15 +29,15 @@
 <meta property="og:title" content="Hello pelicon"/>
 <meta property="og:description" content="搭建pelicon过程"/>
 <meta property="og:locale" content="en_US"/>
-<meta property="og:url" content="http://localhost:8000/hello-pelicon.html"/>
+<meta property="og:url" content="https://imaemo.github.io/hello-pelicon.html"/>
 <meta property="og:type" content="article"/>
 <meta property="article:published_time" content="2016-12-10 15:29:00+08:00"/>
 <meta property="article:modified_time" content="2016-12-11 17:22:00+08:00"/>
-<meta property="article:author" content="http://localhost:8000/author/meego.html">
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
 <meta property="article:section" content="Python"/>
 <meta property="article:tag" content="pelican"/>
 <meta property="article:tag" content="python"/>
-<meta property="og:image" content="http://localhost:8000/images/profile.png">
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
 
   <title>meego &ndash; Hello pelicon</title>
 
@@ -45,15 +45,15 @@
 <body>
   <aside>
     <div>
-      <a href="http://localhost:8000">
-        <img src="http://localhost:8000/images/profile.png" alt="" title="">
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
       </a>
-      <h1><a href="http://localhost:8000"></a></h1>
+      <h1><a href="https://imaemo.github.io"></a></h1>
 
 
       <nav>
         <ul class="list">
-          <li><a href="http://localhost:8000/pages/about.html#about">about</a></li>
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
 
           <li><a href="http://www.baidu.com" target="_blank"></a></li>
         </ul>
@@ -69,7 +69,7 @@
   <main>
 
     <nav>
-      <a href="http://localhost:8000">    Home
+      <a href="https://imaemo.github.io">    Home
 </a>
 
       <a href="/archives.html">Archives</a>
@@ -83,7 +83,7 @@
   <header>
     <h1 id="hello-pelicon">Hello pelicon</h1>
     <p>
-          Posted on 六 10 十二月 2016 in <a href="http://localhost:8000/category/python.html">Python</a>
+          Posted on 六 10 十二月 2016 in <a href="https://imaemo.github.io/category/python.html">Python</a>
 
 
     </p>
@@ -91,7 +91,7 @@
 
 
   <div>
-    <p>之前搭建立过几次博客,用过wordpress, 也在家里的路由器上面搭建过emlog。现在一直在用python，所以想定下来，用pelicon搭建，托管在github上面。  </p>
+    <p>之前搭建立过几次博客,用过wordpress, 也在家里的路由器上面搭建过emlog。现在用python比较多，所以想定下来，用pelicon搭建，托管在github上面。  </p>
 <p>主要步骤：</p>
 <p>建立一个python环境   </p>
 <div class="highlight"><pre><span></span>virtualenv pelicon_env
@@ -131,20 +131,32 @@ cd blog
 
 <p>生成的内容在<code>output</code>文件夹中  </p>
 <p>本地预览  </p>
-<div class="highlight"><pre><span></span>make devserver
-# 或者  
-python -m pelicon.server # python 2.7
-# 或者 
-fabi serve
+<div class="highlight"><pre><span></span>make html
+make serve
+# 或者 直接用
+make devserve
 </pre></div>
 
 
-<p>未完待续。。。</p>
+<p>注意,pelican目录下面有一个<code>publishconf.py</code>,官方文档说的是在正式部署时，生成output使用的。里面的内容与<code>pelicanconf.py</code>有些不同，预览时的url是正式的url，在本地开发时根本不会用到。<br />
+所以这个文件基本不会再用。  </p>
+<p>部署到github<br />
+github的gh-pages分为项目级和用户级。
+对于用户级别， 新建一个repo, 命名为 <username>.github.io, 上传静态文件。访问方式为 <code>https://&lt;username&gt;.github.io</code><br />
+对于项目级：新建一个分支gh-pages, 访问方式 <code>http://&lt;username&gt;.github.com/&lt;projectname&gt;</code><br />
+所以这里，我们要新建一个repo,命令为 imaemo.github.io</p>
+<div class="highlight"><pre><span></span>cd output  
+git init .
+git add -all
+git remote add origin git@github.com:imaemo/imaemo.github.io.git
+git commit -m &quot;first commit&quot;
+git push origin master
+</pre></div>
   </div>
   <div class="tag-cloud">
     <p>
-      <a href="http://localhost:8000/tag/pelican.html">pelican</a>
-      <a href="http://localhost:8000/tag/python.html">python</a>
+      <a href="https://imaemo.github.io/tag/pelican.html">pelican</a>
+      <a href="https://imaemo.github.io/tag/python.html">python</a>
     </p>
   </div>
 
@@ -181,8 +193,8 @@ fabi serve
   "@context" : "http://schema.org",
   "@type" : "Blog",
   "name": " meego ",
-  "url" : "http://localhost:8000",
-  "image": "http://localhost:8000/images/profile.png",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
   "description": ""
 }
 </script>
