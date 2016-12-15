@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="解决更新项目,遇到的问题及解决方法" />
+<meta name="keywords" content="uwsgi, django">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="在线更新django项目,遇到1050, "Table 'django_content_type' already exists""/>
+<meta property="og:description" content="解决更新项目,遇到的问题及解决方法"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/zai-xian-geng-xin-djangoxiang-mu-yu-dao-1050-table-django_content_type-already-exists.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2016-12-15 20:00:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="python"/>
+<meta property="article:tag" content="uwsgi"/>
+<meta property="article:tag" content="django"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; 在线更新django项目,遇到1050, "Table 'django_content_type' already exists"</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="zai-xian-geng-xin-djangoxiang-mu-yu-dao-1050-table-django_content_type-already-exists">在线更新django项目,遇到1050, "Table 'django_content_type' already exists"</h1>
+    <p>
+          Posted on 四 15 十二月 2016 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p><em>场景</em> ：  </p>
+<p>在前两天系统上线了，代码和数据库都在服务器上，运行几天后发现了几个bug。在本地修改代码，数据库用本地的。</p>
+<p>由于修改了model, 所以本地的数据库进行了<code>migrage</code>操作。这个时候我把服务器的数据库导出到本地的<code>testDb</code>里面，运行<code>migrate</code>时发现它找不到需要修改的model部分，提示我<code>no change found</code>。</p>
+<p><em>策略</em> : </p>
+<p>我的策略现在是: <code>开发数据库与线上数据库分离</code>，<code>先测试后上线</code>, <code>数据库增量备份</code>。<br />
+   但现在的问题在于，开发的代码修改了model,而线上数据库没有migrate，直接连接到这个数据库时，运行时会报错找不到某些新加的字段。<br />
+   后来找到了解决办法：  </p>
+<div class="highlight"><pre><span></span>1. 首先回退代码到线上运行时commit点:
+
+    git reset --hard xxxxxx
+
+2. 修改settings.py, 连接数据库到`testDb`
+
+3. 删除所有app下的migrations文件夹除了__init__.py的文件
+
+    find . -path &quot;*/migrations/*.py&quot; -not -name &quot;__init__.py&quot; -delete
+    find . -path &quot;*/migrations/*.pyc&quot;  -delete
+
+4. 在数据库中删除django_migrations表中的记录
+
+   delete from django_migrations;
+
+5. Reset the migrations
+
+    python manage.py migrate --fake  
+    python manage.py makemigrations  
+    python manage.py migrate --fake-initial
+
+6. 运行一下 (这里我用的是CentOS 7,其它的系统可能不一样，也有可能不同)
+
+    sudo systemctl start xxx.service
+    # 下一步操作前先停止一下 
+    sudo systemctl stop xxx.service
+
+7. 现在的情况应该是同步线上了。拉取最新代码，再按正常的migrate操作
+
+    git pull origin release 
+    python manage.py makemigrations
+    python manage.py migrate
+
+8. 现在的情况就是最新的代码了，数据库也同步了代码的更改。
+</pre></div>
+
+
+<p>参考链接：<br />
+<a href="http://stackoverflow.com/questions/29888046/django-1-8-create-initial-migrations-for-existing-schema">http://stackoverflow.com/questions/29888046/django-1-8-create-initial-migrations-for-existing-schema</a><br />
+<a href="https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html">https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html</a>  </p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/uwsgi.html">uwsgi</a>
+      <a href="https://imaemo.github.io/tag/django.html">django</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
