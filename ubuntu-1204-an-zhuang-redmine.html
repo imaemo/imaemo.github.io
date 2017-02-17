@@ -279,8 +279,10 @@ cd ImageMagick
 git checkout -b im6 origin/ImageMagick-6
 git clean -fd
 ./configure
+make
 sudo make install
 sudo ldconfig /usr/local/lib
+gem install rmagick
 </pre></div>
 
 
