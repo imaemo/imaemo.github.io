@@ -286,6 +286,25 @@ gem install rmagick
 </pre></div>
 
 
+<p>这里有一个坑，官方安装时说如果没有装rmagick的话用下面的命令  </p>
+<div class="highlight"><pre><span></span> bundle install --without development test rmagick
+</pre></div>
+
+
+<p>但是如果在之后安装了rmagick，想要enable时，官方却没有指出。后来才发现要修改<code>.bundle/config文件</code>里面的内容如下：</p>
+<div class="highlight"><pre><span></span>BUNDLE_WITHOUT: &quot;development:test:rmagick&quot;
+</pre></div>
+
+
+<p>注意这个<code>.bundle</code>文件是在代码的根目录，不是用户主目录。把<code>:rmagick</code>删除。再执行  </p>
+<div class="highlight"><pre><span></span>bundle install --without development test
+# 重启apache
+sudo service apache restart
+# 重启passenger的方法如下
+passenger-config restart-app
+</pre></div>
+
+
 </li>
 </ul>
 <p>API接口  </p>
