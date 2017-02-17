@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="搭建redmine笔记" />
+<meta name="keywords" content="redmine">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="ubuntu 12.04 安装redmine"/>
+<meta property="og:description" content="搭建redmine笔记"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/ubuntu-1204-an-zhuang-redmine.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-02-16 23:29:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="linux"/>
+<meta property="article:tag" content="redmine"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; ubuntu 12.04 安装redmine</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="ubuntu-1204-an-zhuang-redmine">ubuntu 12.04 安装redmine</h1>
+    <p>
+          Posted on 四 16 二月 2017 in <a href="https://imaemo.github.io/category/linux.html">linux</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>最近有个需求，把ALM上的数据导出到redmine中，再做一个插件。<br />
+因为系统比较老了，所以中间遇到一些问题。</p>
+<div class="highlight"><pre><span></span>#redmine的环境如下
+Environment:
+  Redmine version                3.2.1.stable
+  Ruby version                   2.3.1-p112 (2016-04-26) [x86_64-linux]
+  Rails version                  4.2.5.2
+  Environment                    production
+  Database adapter               Mysql2
+SCM:
+  Filesystem                     
+Redmine plugins:
+  no plugin installed
+</pre></div>
+
+
+<ul>
+<li>
+<p>安装ruby, gems, rails<br />
+     因为ubuntu默认版本是1.8,所以需要升级安装2.3.1。我用的是rbenv  </p>
+<div class="highlight"><pre><span></span><span class="err">#</span><span class="x"> 如果是zsh的话， .bashrc要换成.zshrc</span>
+<span class="p">$</span><span class="x"> git clone https://github.com/rbenv/rbenv.git ~/.rbenv</span>
+<span class="p">$</span><span class="x"> echo &#39;export PATH=&quot;</span><span class="p">$</span><span class="nv">HOME</span><span class="x">/.rbenv/bin:</span><span class="p">$</span><span class="nv">PATH</span><span class="x">&quot;&#39; &gt;&gt; ~/.bashrc</span>
+<span class="p">$</span><span class="x"> echo &#39;eval &quot;</span><span class="p">$(</span><span class="err">rbenv</span> <span class="err">init</span> <span class="err">-</span><span class="p">)</span><span class="x">&quot;&#39; &gt;&gt; ~/.bashrc</span>
+<span class="p">$</span><span class="x"> exec </span><span class="p">$</span><span class="nv">SHELL</span><span class="x"></span>
+<span class="p">$</span><span class="x"> git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build</span>
+<span class="p">$</span><span class="x"> echo &#39;export PATH=&quot;</span><span class="p">$</span><span class="nv">HOME</span><span class="x">/.rbenv/plugins/ruby-build/bin:</span><span class="p">$</span><span class="nv">PATH</span><span class="x">&quot;&#39; &gt;&gt; ~/.bashrc</span>
+<span class="p">$</span><span class="x"> exec </span><span class="p">$</span><span class="nv">SHELL</span><span class="x"></span>
+<span class="err">#</span><span class="x"> 安装ruby</span>
+<span class="p">$</span><span class="x"> rbenv install 2.3.1</span>
+<span class="x">source ~/.bashrc </span><span class="err">#</span><span class="x"> 最后执行一下这一步</span>
+<span class="err">#</span><span class="x"> 设置为全局</span>
+<span class="x">rbenv global 2.3.3</span>
+<span class="err">#</span><span class="x"> 检查一下ruby的版本</span>
+<span class="x">ruby -v</span>
+</pre></div>
+
+
+<p>安装gems，(rubygems的简称, 类似于python的pip,是一个包管理器)  </p>
+<div class="highlight"><pre><span></span>sudo apt-get install rubygems # for ubuntu 12
+</pre></div>
+
+
+<p>查看gems的安装路径  </p>
+<div class="highlight"><pre><span></span>gem env gemdir
+</pre></div>
+
+
+<p>用gem安装rails  </p>
+<div class="highlight"><pre><span></span>gem insall rails
+</pre></div>
+
+
+</li>
+<li>
+<p>下载redmine代码  </p>
+<p><a href="https://www.redmine.org/releases/">https://www.redmine.org/releases/</a>  </p>
+</li>
+<li>
+<p>数据库我选择mysql<br />
+     Redmine database user will be named redmine hereafter but it can be changed to anything else <br />
+     登录到mysql命令行，redmine_default, 新建一个redmine用户，密码为my_password。给redmine用户操作redmine数据库的权限</p>
+<div class="highlight"><pre><span></span>CREATE DATABASE redmine_default CHARACTER SET utf8;
+CREATE USER &#39;redmine&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;my_password&#39;;
+GRANT ALL PRIVILEGES ON redmine_default.* TO &#39;redmine&#39;@&#39;localhost&#39;;
+</pre></div>
+
+
+</li>
+<li>
+<p>配置数据库连接<br />
+  在第一步下载完成代码后，放到你的工作目录。<br />
+  复制config/database.yml.example为config/database.yml,修改<code>production</code>部分相关的内容，其它<code>development</code>,<code>test</code>部分我暂不使用</p>
+<div class="highlight"><pre><span></span><span class="n">production</span><span class="o">:</span>
+    <span class="n">adapter</span><span class="o">:</span> <span class="n">mysql2</span>
+    <span class="n">database</span><span class="o">:</span> <span class="n">redmine_default</span>
+    <span class="n">host</span><span class="o">:</span> <span class="n">localhost</span>
+    <span class="n">username</span><span class="o">:</span> <span class="n">redmine</span>
+    <span class="n">password</span><span class="o">:</span> <span class="n">my_password</span>
+    <span class="n">encoding</span><span class="o">:</span> <span class="n">utf8</span>
+</pre></div>
+
+
+</li>
+<li>
+<p>安装依赖<br />
+  一定要在redmine代码的根目录!!!<br />
+  首先用gem 安装 bundler  </p>
+<div class="highlight"><pre><span></span>gem install bundler
+</pre></div>
+
+
+<p>安装项目的依赖  </p>
+<div class="highlight"><pre><span></span># 这里排除了 development test, 如果修改了database.yml以后，还要重新执行一次
+bundle install --without development test
+</pre></div>
+
+
+</li>
+<li>
+<p>session安全相关  <br />
+这一步主要是产生加密cookie和session的key</p>
+<div class="highlight"><pre><span></span>bundle exec rake generate_secret_token
+</pre></div>
+
+
+</li>
+<li>
+<p>数据库结构创建    </p>
+<div class="highlight"><pre><span></span>RAILS_ENV=production bundle exec rake db:migrate
+</pre></div>
+
+
+</li>
+<li>
+<p>插入默认数据  </p>
+<div class="highlight"><pre><span></span>RAILS_ENV=production bundle exec rake redmine:load_default_data
+</pre></div>
+
+
+</li>
+<li>
+<p>创建相关文件夹  </p>
+<ul>
+<li>files (storage of attachments)</li>
+<li>log (application log file production.log)</li>
+<li>tmp and tmp/pdf (create these ones if not present, used to generate PDF documents among other things)</li>
+<li>
+<p>public/plugin_assets (assets of plugins)  </p>
+<p>mkdir -p tmp tmp/pdf public/plugin_assets
+sudo chown -R redmine:redmine files log tmp public/plugin_assets
+sudo chmod -R 755 files log tmp public/plugin_assets</p>
+</li>
+</ul>
+</li>
+<li>
+<p>测试运行rails  </p>
+<div class="highlight"><pre><span></span>bundle exec ruby script/rails server webrick -e production
+</pre></div>
+
+
+<p>打开浏览器，输入<a href="http://localhost:3000/">http://localhost:3000/</a>,应该就可以看到redmine的登录界面了，同时console里面也可以看到log<br />
+默认用户名和密码都是<code>admin</code></p>
+</li>
+</ul>
+<p>部署，启动redmine</p>
+<ul>
+<li>
+<p>安装passenger及apache扩展  </p>
+<div class="highlight"><pre><span></span>gem install passenger --no-rdoc --no-ri
+
+passenger-install-apache2-module
+</pre></div>
+
+
+<p>然后根据提示进行操作，可能需要修改 <code>/etc/apache2/mods-enabled/passenger.load</code> 和 <code>/etc/apache2/mods-available/passenger.conf</code>  </p>
+<p>启用passenger扩展  </p>
+<div class="highlight"><pre><span></span>sudo a2enmod passenger
+</pre></div>
+
+
+<p>修改 <code>/etc/apache2/sites-available/default</code>, 添加如下部分</p>
+<div class="highlight"><pre><span></span>  <span class="nt">&lt;Directory</span> <span class="err">/var/www/redmine</span><span class="nt">&gt;</span>
+      RailsBaseURI /redmine
+      PassengerResolveSymlinksInDocumentRoot on                                                                                                                                                 
+  <span class="nt">&lt;/Directory&gt;</span>
+</pre></div>
+
+
+<p>启动redmine  </p>
+<div class="highlight"><pre><span></span>sudo ln -s /redmine_dir/public/ /var/www/redmine
+</pre></div>
+
+
+<p>重启apache  </p>
+<div class="highlight"><pre><span></span>sudo service apache2 restart
+</pre></div>
+
+
+</li>
+<li>
+<p>安装rmagic<br />
+     这一步不是必须的。
+     先要安装<code>ImageMagick</code>,因为ubuntu版本的原因,所以不能用apt-get安装。从源码,而且不能选择最新的7.0的版本,因为rmagic还没有适配，最新的pr前两天还有人回复。   </p>
+<div class="highlight"><pre><span></span>git clone https://github.com/ImageMagick/ImageMagick.git
+cd ImageMagick
+git checkout -b im6 origin/ImageMagick-6
+git clean -fd
+./configure
+sudo make install
+sudo ldconfig /usr/local/lib
+</pre></div>
+
+
+</li>
+</ul>
+<p>API接口  </p>
+<p>redmine有提供接口，刚好又有一个封闭好的python的包也比较好用<code>PythonRedmine</code><br />
+详细使用可以看这里<a href="http://python-redmine.readthedocs.io/">http://python-redmine.readthedocs.io/</a></p>
+<p>参考链接： </p>
+<p><a href="http://stackoverflow.com/questions/18490591/how-to-install-ruby-2-on-ubuntu-without-rvm">http://stackoverflow.com/questions/18490591/how-to-install-ruby-2-on-ubuntu-without-rvm</a><br />
+<a href="https://henter.me/post/ruby-rvm-gem-rake-bundle-rails.html">https://henter.me/post/ruby-rvm-gem-rake-bundle-rails.html</a><br />
+<a href="https://ruby-china.org/topics/25530">https://ruby-china.org/topics/25530</a><br />
+<a href="https://wiki.archlinux.org/index.php/Ruby_(简体中文)">https://wiki.archlinux.org/index.php/Ruby_(简体中文)</a><br />
+<a href="http://www.redmine.org/projects/redmine/wiki/RedmineInstall">http://www.redmine.org/projects/redmine/wiki/RedmineInstall</a>
+    <a href="http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_30x_on_Ubuntu_1404_with_Apache2_Phusion_Passenger_MySQL_Subversion_and_Git_(Gitolite)#Users">http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_30x_on_Ubuntu_1404_with_Apache2_Phusion_Passenger_MySQL_Subversion_and_Git_(Gitolite)#Users</a>  <br />
+<a href="http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_on_Ubuntu_step_by_step">http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_on_Ubuntu_step_by_step</a><br />
+<a href="https://www.phusionpassenger.com/library/install/apache/install/oss/rubygems_rvm/">https://www.phusionpassenger.com/library/install/apache/install/oss/rubygems_rvm/</a><br />
+<a href="http://www.imagemagick.org/script/install-source.php">http://www.imagemagick.org/script/install-source.php</a><br />
+<a href="http://sayaku.github.io/blog/2016/05/05/rubyde-rvm-gem-bundler/">http://sayaku.github.io/blog/2016/05/05/rubyde-rvm-gem-bundler/</a><br />
+<a href="https://ruby-china.org/topics/25530">https://ruby-china.org/topics/25530</a>  </p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/redmine.html">redmine</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
