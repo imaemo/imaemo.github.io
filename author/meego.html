@@ -77,6 +77,35 @@
 
 <article>
   <header>
+    <h2><a href="https://imaemo.github.io/django-mysql-queyryshi-yong-datetimemei-you-jie-guo.html#django-mysql-queyryshi-yong-datetimemei-you-jie-guo">django & mysql, queyry使用datetime没有结果</a></h2>
+    <p>
+          Posted on 一 27 二月 2017 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+          &#8226;     Tagged with
+
+              <a href="https://imaemo.github.io/tag/django.html">django</a>
+    </p>
+  </header>
+  <div>
+      <p>有一个django项目中需要根据日期来查询，在本地调试时没问题，可线上就查询不到结果:  </p>
+<div class="highlight"><pre><span></span>now = datetime.datetime.now()
+cashin = Cashin.objects.filter(update_time__month=now.month)
+</pre></div>
+
+
+<p>数据库用的是mysql，打印原始sql语句:  </p>
+<div class="highlight"><pre><span></span>print Cashin.objects.filter(update_time__month=now.month)
+
+#SELECT `cash_cashin`.`id`, `cash_cashin`.`create_time`, `cash_cashin`.`update_time`, `cash_cashin`.`status`, `cash_cashin`.`source`, `cash_cashin`.`order_id`, `cash_cashin`.`partner_order_id`, `cash_cashin`.`other`, `cash_cashin`.`desc`, `cash_cashin`.`money` FROM `cash_cashin` WHERE EXTRACT(MONTH FROM ...</pre></div>
+      <br>
+      <a class="btn" href="https://imaemo.github.io/django-mysql-queyryshi-yong-datetimemei-you-jie-guo.html#django-mysql-queyryshi-yong-datetimemei-you-jie-guo">    Continue reading
+</a>
+  </div>
+  <hr />
+</article>
+<article>
+  <header>
     <h2><a href="https://imaemo.github.io/ubuntu-1204-an-zhuang-redmine.html#ubuntu-1204-an-zhuang-redmine">ubuntu 12.04 安装redmine</a></h2>
     <p>
           Posted on 四 16 二月 2017 in <a href="https://imaemo.github.io/category/linux.html">linux</a>

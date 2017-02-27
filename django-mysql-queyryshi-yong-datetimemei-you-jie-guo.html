@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="有一个django项目中需要根据日期来查询，在本地调试时没问题，可线上就查询不到结果: now = datetime.datetime.now() cashin = Cashin.objects.filter(update_time__month=now.month) 数据库用的是mysql，打印原始sql语句: print Cashin.objects.filter(update_time__month=now.month) #SELECT `cash_cashin`.`id`, `cash_cashin`.`create_time`, `cash_cashin`.`update_time`, `cash_cashin`.`status`, `cash_cashin`.`source`, `cash_cashin`.`order_id`, `cash_cashin`.`partner_order_id`, `cash_cashin`.`other`, `cash_cashin`.`desc`, `cash_cashin`.`money` FROM `cash_cashin` WHERE EXTRACT(MONTH FROM ..." />
+<meta name="keywords" content="django">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="django & mysql, queyry使用datetime没有结果"/>
+<meta property="og:description" content="有一个django项目中需要根据日期来查询，在本地调试时没问题，可线上就查询不到结果: now = datetime.datetime.now() cashin = Cashin.objects.filter(update_time__month=now.month) 数据库用的是mysql，打印原始sql语句: print Cashin.objects.filter(update_time__month=now.month) #SELECT `cash_cashin`.`id`, `cash_cashin`.`create_time`, `cash_cashin`.`update_time`, `cash_cashin`.`status`, `cash_cashin`.`source`, `cash_cashin`.`order_id`, `cash_cashin`.`partner_order_id`, `cash_cashin`.`other`, `cash_cashin`.`desc`, `cash_cashin`.`money` FROM `cash_cashin` WHERE EXTRACT(MONTH FROM ..."/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/django-mysql-queyryshi-yong-datetimemei-you-jie-guo.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-02-27 20:55:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="python"/>
+<meta property="article:tag" content="django"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; django & mysql, queyry使用datetime没有结果</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="django-mysql-queyryshi-yong-datetimemei-you-jie-guo">django & mysql, queyry使用datetime没有结果</h1>
+    <p>
+          Posted on 一 27 二月 2017 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>有一个django项目中需要根据日期来查询，在本地调试时没问题，可线上就查询不到结果:  </p>
+<div class="highlight"><pre><span></span>now = datetime.datetime.now()
+cashin = Cashin.objects.filter(update_time__month=now.month)
+</pre></div>
+
+
+<p>数据库用的是mysql，打印原始sql语句:  </p>
+<div class="highlight"><pre><span></span>print Cashin.objects.filter(update_time__month=now.month)
+
+#SELECT `cash_cashin`.`id`, `cash_cashin`.`create_time`, `cash_cashin`.`update_time`, `cash_cashin`.`status`, `cash_cashin`.`source`, `cash_cashin`.`order_id`, `cash_cashin`.`partner_order_id`, `cash_cashin`.`other`, `cash_cashin`.`desc`, `cash_cashin`.`money` FROM `cash_cashin` WHERE EXTRACT(MONTH FROM CONVERT_TZ(`cash_cashin`.`update_time`, &#39;UTC&#39;, Asia/Shanghai)) = 2
+</pre></div>
+
+
+<p>看到其中有提到timezone。于是一搜索，发现可能是没有加载mysql的time_zone为空。</p>
+<div class="highlight"><pre><span></span>select * from mysql.timezone
+</pre></div>
+
+
+<p>果然是，于是加载一下：</p>
+<div class="highlight"><pre><span></span>mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root -p mysql
+</pre></div>
+
+
+<p>问题解决了，原来是mysql的问题，而不是django。</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/django.html">django</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
