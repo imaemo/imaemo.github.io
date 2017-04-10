@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="ubutu 12.04,整合django和celery,以及对应的upstart脚本" />
+<meta name="keywords" content="Celery">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="django & celery 的upstart脚本"/>
+<meta property="og:description" content="ubutu 12.04,整合django和celery,以及对应的upstart脚本"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/django-celery-de-upstartjiao-ben.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-02-15 22:29:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="python"/>
+<meta property="article:tag" content="Celery"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; django & celery 的upstart脚本</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="django-celery-de-upstartjiao-ben">django & celery 的upstart脚本</h1>
+    <p>
+          Posted on 三 15 二月 2017 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>之前有部署过django,和celery，但是中间有一次服务器重启之后，项目没有运行，于是系统地学习了一下如果在服务器启动时就启动django项目。  </p>
+<p>项目部署的方案是 nginx + uwsgi + django，还用到了celery, broker用的是rabbitmq。rabbitmq在安装时默认已经是开机启动了。</p>
+<h3>Upstart</h3>
+<p>uwsgi的upstar脚本在官网的文档中有写到，下面是我项目里面的：  </p>
+<div class="highlight"><pre><span></span>description &quot;uWSGI instance to serve myapp&quot;
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+#setuid user
+#setgid www-data
+
+respawn
+
+pre-start script
+    if [ ! -d /var/run/uwsgi ]; then
+        mkdir -p /var/run/uwsgi
+        chown user:www-data /var/run/uwsgi
+    fi
+end script
+# product 
+#exec /usr/local/bin/uwsgi --ini /var/www/project_name/bs.ini
+
+# dev
+exec /usr/local/bin/uwsgi --ini /data2/workspace/python/project_name/bs.ini
+</pre></div>
+
+
+<p>pre-start部分应该要注意一下，项目的pid文件是放在/var/run/uwsgi下面的。要值得注意的一点是bs.ini文件里面不能有<code>daemonize</code>配置, 加上的话uwsgi进程会正常退出，Upstart会认为job已经stopp了，并终止进程。详细见参考2</p>
+<h3>uwsgi ini配置</h3>
+<p>下面是我的配置：<br />
+    [uwsgi]</p>
+<div class="highlight"><pre><span></span>uid = jenkins
+gid = www-data
+# the base directory (full path)
+chdir = /var/www/project_name
+
+# Django s wsgi file
+module = project_name.wsgi:application
+
+# process-related settings
+# master
+master = true
+
+# maximum number of worker processes
+processes = 4
+
+socket = /var/run/uwsgi/project_name.sock
+
+# ... with appropriate permissions - may be needed
+chmod-socket = 664
+# clear environment on exit
+vacuum = true
+
+die-on-term = true
+
+;logto = /tmp/ent.log
+logfile-chown = jenkins:www-data
+logto = /var/log/uwsgi/project_name.log
+
+pidfile = /var/run/uwsgi/project_name.pid
+</pre></div>
+
+
+<h3>开机自启配置</h3>
+<p><code>/etc/init/</code>下面的配置文件都是开机自启的，比如第一部分的Upstart脚本。命令风格为<code>xxxx.conf</code>
+<code>/etc/init.d/</code>下面的文件是传统的sysinit脚本。celery的配置文件就是放在下面的。
+<code>sysv-rc-conf</code>命令可以在终端下面可视化配置</p>
+<h3>celery 和 celerybeat 的 daemonize</h3>
+<p>有一点要注意的是<code>celery</code>和<code>celerybeat</code>都要启动，要执行两个命令</p>
+<div class="highlight"><pre><span></span>sudo service project_celery start
+sudo service project_celerybeat start
+</pre></div>
+
+
+<p>涉及要的文件是<code>/etc/init.c/project_celery</code>和<code>/etc/init.d/project_celerybeat</code>，而且都要有x权限
+<code>/etc/defult/project_celery</code>是这个项目的celery配置文件，不同项目可以有不同的配置文件，不同项目隔离<br />
+其中<code>/etc/init.d/project_celery</code>和<code>/etc/init.d/project_celerybeat</code>都是官方的，需要改一下，比如user, default log文件的名字，还有defult的配置文件，也就是指向<code>/etc/default/project_celery</code></p>
+<p>参考链接：<br />
+<a href="https://help.ubuntu.com/community/UbuntuBootupHowto">https://help.ubuntu.com/community/UbuntuBootupHowto</a>
+  <a href="http://stackoverflow.com/questions/17667239/managing-uwsgi-with-upstart?newreg=6e23686727864cf381a8d612159e23b3">http://stackoverflow.com/questions/17667239/managing-uwsgi-with-upstart?newreg=6e23686727864cf381a8d612159e23b3</a>
+  <a href="http://blog.csdn.net/gatieme/article/details/45251389">http://blog.csdn.net/gatieme/article/details/45251389</a></p>
+<p><a href="http://docs.celeryproject.org/en/latest/index.html">http://docs.celeryproject.org/en/latest/index.html</a><br />
+<a href="http://www.ibm.com/developerworks/cn/opensource/os-cn-celery-web-service/index.html#ibm-pcon">http://www.ibm.com/developerworks/cn/opensource/os-cn-celery-web-service/index.html#ibm-pcon</a><br />
+<a href="https://pythad.github.io/articles/2016-12/how-to-run-celery-as-a-daemon-in-production">https://pythad.github.io/articles/2016-12/how-to-run-celery-as-a-daemon-in-production</a><br />
+<a href="https://github.com/celery/django-celery/issues/215">https://github.com/celery/django-celery/issues/215</a><br />
+<a href="http://emadmokhtar.com/how-to-run-celery-as-daemon.html">http://emadmokhtar.com/how-to-run-celery-as-daemon.html</a>  </p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/celery.html">Celery</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
