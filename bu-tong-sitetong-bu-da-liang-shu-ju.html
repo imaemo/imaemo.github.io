@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/stylesheet/style.min.css">
+
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/pygments/github.min.css">
+  <link rel="stylesheet" type="text/css" href="https://imaemo.github.io/theme/font-awesome/css/font-awesome.min.css">
+
+
+
+
+    <link rel="shortcut icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+    <link rel="icon" href="https://imaemo.github.io/images/profile.png" type="image/x-icon">
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+
+
+<meta name="author" content="meego" />
+<meta name="description" content="web向服务器同步数据，关键点是pipe" />
+<meta name="keywords" content="shell, python">
+<meta property="og:site_name" content="meego"/>
+<meta property="og:title" content="不同site同步大量数据"/>
+<meta property="og:description" content="web向服务器同步数据，关键点是pipe"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://imaemo.github.io/bu-tong-sitetong-bu-da-liang-shu-ju.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2017-04-17 21:29:00+08:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="https://imaemo.github.io/author/meego.html">
+<meta property="article:section" content="python"/>
+<meta property="article:tag" content="shell"/>
+<meta property="article:tag" content="python"/>
+<meta property="og:image" content="https://imaemo.github.io/images/profile.png">
+
+  <title>meego &ndash; 不同site同步大量数据</title>
+
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="https://imaemo.github.io">
+        <img src="https://imaemo.github.io/images/profile.png" alt="" title="">
+      </a>
+      <h1><a href="https://imaemo.github.io"></a></h1>
+
+
+      <nav>
+        <ul class="list">
+          <li><a href="https://imaemo.github.io/pages/about.html#about">about</a></li>
+
+          <li><a href="http://www.baidu.com" target="_blank"></a></li>
+        </ul>
+      </nav>
+
+      <ul class="social">
+        <li><a class="sc-github" href="https://github.com/imaemo/" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+
+
+  </aside>
+  <main>
+
+    <nav>
+      <a href="https://imaemo.github.io">    Home
+</a>
+
+      <a href="/archives.html">Archives</a>
+      <a href="/categories.html">Categories</a>
+      <a href="/tags.html">Tags</a>
+
+
+    </nav>
+
+<article class="single">
+  <header>
+    <h1 id="bu-tong-sitetong-bu-da-liang-shu-ju">不同site同步大量数据</h1>
+    <p>
+          Posted on 一 17 4月 2017 in <a href="https://imaemo.github.io/category/python.html">python</a>
+
+
+    </p>
+  </header>
+
+
+  <div>
+    <p>一提到linux服务器同步数据，我能想到的就有<code>curl</code>, <code>wget</code>, <code>rsync</code>, <code>aria2c</code>这些命令。这两天我遇到一个问题，公司需要把深圳的一些项目数据同步到成都。深圳的数据是用apache的目录浏览模式，一个项目有多个文件夹，每个文件夹下又可能有多个文件和文件夹，需要把某个日期过后的所有文件同步到成都服务器。如果ssh可以直连深圳服务器的话，我就可以用<code>rsync</code>来同步了，可问题就在于深圳服务器只开放了目录浏览模式。另外一个问题，我的电脑不能直接打开深圳的网址，需要配置公司的http代理。</p>
+<h4>思路: <code>wget</code>下载文件</h4>
+<div class="highlight"><pre><span></span>wget  -q --show-progress  -r -np -c -k -L -nH --reject *.html* -e http_proxy=&quot;http://192.168.2.1:2632&quot; https://animorphsfanforum.com/fanart/2064/
+</pre></div>
+
+
+<blockquote>
+<p>-q: 安静模式，不输出，但是加上--show-progress就可以只显示下载进度<br />
+  -r: 递归下载<br />
+  -np: 就是no-parent的意思，不向父级遍历<br />
+  -c: 断点续传<br />
+  -nH: 不创建主机目录, 比如 http://abc.com/a/b/, 就不创建abc.com/a/b/这几个目录。这点很重要
+  -e command: 执行命令，我是设置了公司的http代理去访问目录网址</p>
+</blockquote>
+<p>这种方式有几点不足: </p>
+<div class="highlight"><pre><span></span>- 不方便控制只选择哪个日期之后的文件夹下载。
+- 重要的一点无法进行并发下载。我一个项目的数据有60多个文件，共10G大小。这样测试下载需要30分钟左右的速度。
+- 本地上传到服务器也需要5分钟左右，这样就很浪费时间。
+- 数据下载到本地很占硬盘空间。
+</pre></div>
+
+
+<h4>思路2: <code>aria2c</code></h4>
+<p>相对于上面，aria2c可以并发下载。但是它无法下载目录。最多可以下载批量的url，但这显然不是我想要的。</p>
+<h4>改进：python爬取链接，多进程，wget下载, 通过pipe ssh上传</h4>
+<ul>
+<li>
+<p>通过<code>requests</code>库递归爬取链接。以[{'url':'http://aaa.zip', 'name':'aa.zip'},]的形式保存。requests也需要设置代理。</p>
+<div class="highlight"><pre><span></span>proxies= { &#39;http&#39;:&#39;http://192.168.2.1:2632&#39; }
+r = requests.get(url, proxies=proxies)
+</pre></div>
+
+
+</li>
+<li>
+<p>使用multiprocess 和 pool库进行多进程下载  </p>
+<div class="highlight"><pre><span></span>p = Pool(processes=8)
+# 也可以用p.map
+for j in xrange(len(files)):
+    p.apply_async(single_download, args=(f[&#39;url&#39;], new_dir))
+p.close()
+p.join()
+</pre></div>
+
+
+</li>
+</ul>
+<p>p.close() 不再往进程池里添加数据
+p.join() 阻塞等待所有进程完成。
+通过线程的方式，下载时间减少到了10分钟</p>
+<ul>
+<li>
+<p>wget 下载，pipe 上传</p>
+<p>通过使用pipe技术，边下载边上传，不占用本地硬盘空间。</p>
+<div class="highlight"><pre><span></span>cmd = &#39;wget -q --show-progress -e http_proxy=&quot;http://192.168.2.1:2632&quot; {} -O- | ssh {} \&#39;[ -d {} ] &amp;&amp; cat &gt;&gt; {} || mkdir -p {} &amp;&amp; cat &gt;&gt; {}\&#39;&#39;.format(url, cd_ssh_account, directory, full_path, directory, full_path)
+</pre></div>
+
+
+</li>
+</ul>
+<p>注意到 wget下载后是ssh到服务器上，判断目录是否存在，否则就创建它，再写入到文件。注意这里是<code>&gt;&gt;</code>而不是<code>&gt;</code>，否则会出现文件为0kb的现象</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="https://imaemo.github.io/tag/shell.html">shell</a>
+      <a href="https://imaemo.github.io/tag/python.html">python</a>
+    </p>
+  </div>
+
+
+
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'blog-teghm8urqq';
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>
+        Please enable JavaScript to view comments.
+
+</noscript>
+</article>
+
+    <footer>
+<p>&copy; meego </p>
+<p>    Powered by <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a>
+</p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Blog",
+  "name": " meego ",
+  "url" : "https://imaemo.github.io",
+  "image": "https://imaemo.github.io/images/profile.png",
+  "description": ""
+}
+</script>
+</body>
+</html>
